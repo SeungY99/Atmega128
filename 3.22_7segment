@@ -115,3 +115,55 @@ int main(void)
 		
     }
 }
+
+16수 및 함수 사용한 7segment Counter
+#include <avr/io.h>
+#define F_CPU 16000000L
+#include <util/delay.h>
+#define __dalay_t 500
+	uint8_t digit[]
+	= {0x3f, 0x06, 0x5b, 0x4f, 0x66, 0x6d, 0x7d, 0x27, 0x7f, 0x6f, 0x77, 0x7c, 0x58, 0x5e, 0x79, 0x71};
+char arr[5];
+	
+	
+void seg(int sel, uint8_t c) {
+		PORTC |= 0x0F;
+		PORTC &= ~(1 << (3-sel));
+		PORTD = c;                  // 숫자데이터 출력
+		_delay_ms(10);                 // 0.01초 간격으로 전환
+}	
+	
+	
+void FND_4(char *inf)             // segment Image 배열
+{
+	for(int i = 0; i < 4; i++) {
+			seg(i, *(inf+i));
+	}
+}
+	
+char* Trans(int num) {              // 10진 정수를 입력받아서 16진수 문자열로 변환 : 65535 ==> 0xFFFF (2byte) / 56506 ==> 0xBCDA 
+	
+	int n1 = num % 16;				//A : 문자가 아닌 숫자
+	int n2 = (num / 16) % 16;		//B 0x10
+	int n3 = (num / 256) % 16;		//C 0x100
+	int n4 = (num / 4096);			//D 0x1000               //나누기의 경우 연산이 길어짐.
+	arr[0] = digit[n1];
+	arr[1] = digit[n2];
+	arr[2] = digit[n3];
+	arr[3] = digit[n4];
+	return arr;
+}
+		
+int main(void) {
+	int i,j = 0;
+	DDRD = 0xFF;
+	DDRC = 0x0F;
+	
+	while(1){
+		
+		
+		FND_4(Trans(j++));
+
+		_delay_ms(10);
+	}
+}
